@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion site</title>
+    <link href="interfaceinscription.css" rel="stylesheet" media="all">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Mon Site</div>
+                <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+                <nav>
+                    <ul id="menu">
+                        <li><a href="file:\Home\Documents\Technologies de l'internet\Nouveau dossier\site.html">Accueil</a></li>
+                        <li><a href="#" onclick="showLogin()">Connexion</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div id="registerPage" class="auth-container">
+        <h2>Créer un compte</h2>
+        
+        <div id="registerMessage" class="message"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="regName">Nom complet</label>
+                <input type="text" id="regName" required>
+                <span class="error" id="regNameError">Le nom doit contenir au moins 3 caractères</span>
+            </div>
+
+            <div class="form-group">
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail" required>
+                <span class="error" id="regEmailError">Veuillez entrer un email valide</span>
+            </div>
+
+            <div class="form-group">
+                <label for="regPassword">Mot de passe</label>
+                <input type="password" id="regPassword" required>
+                <div class="password-strength">
+                    <div class="password-strength-bar" id="strengthBar"></div>
+                </div>
+                <span class="error" id="regPasswordError">Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre</span>
+            </div>
+
+            <div class="form-group">
+                <label for="regConfirmPassword">Confirmer le mot de passe</label>
+                <input type="password" id="regConfirmPassword" required>
+                <span class="error" id="regConfirmError">Les mots de passe ne correspondent pas</span>
+            </div>
+
+            <button type="submit" class="btn">S'inscrire</button>
+        </form>
+
+        <div class="toggle-auth">
+            <p>Déjà un compte ? <a href="#" onclick="showLogin()">Se connecter</a></p>
+        </div>
+    </div>
+
+    <!-- Page de Connexion -->
+    <div id="loginPage" class="auth-container" style="display: none;">
+        <h2>Connexion</h2>
+        
+        <div id="loginMessage" class="message"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" required>
+                <span class="error" id="loginEmailError">Veuillez entrer un email valide</span>
+            </div>
+
+            <div class="form-group">
+                <label for="loginPassword">Mot de passe</label>
+                <input type="password" id="loginPassword" required>
+                <span class="error" id="loginPasswordError">Le mot de passe est requis</span>
+            </div>
+
+            <button type="submit" class="btn">Se connecter</button>
+        </form>
+
+        <div class="toggle-auth">
+            <p>Pas encore de compte ? <a href="#" onclick="showRegister()">S'inscrire</a></p>
+        </div>
+    </div>
+    <div id="dashboard" class="dashboard container">
+        <div class="welcome-box">
+            <h2>Bienvenue sur votre tableau de bord !</h2>
+            <div class="user-info">
+                <p><strong>Nom :</strong> <span id="userName"></span></p>
+                <p><strong>Email :</strong> <span id="userEmail"></span></p>
+                <p><strong>Compte créé le :</strong> <span id="userDate"></span></p>
+            </div>
+            <p>Vous êtes maintenant connecté avec succès.</p>
+            <button class="logout-btn" onclick="logout()">Se déconnecter</button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>Email: nolann.servel.etu@univ-lemans.fr | Tél: 07.69.70.70.87</p>
+            <p>Mon site est soumis à des droits d'auteur</p>
+        </div>
+    </footer>
+
+    <script>
+        async function hashPassword(password) {
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validatePassword(password) {
+            const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            return re.test(password);
+        }
+
+        function checkPasswordStrength(password) {
+            const strengthBar = document.getElementById('strengthBar');
+            let strength = 0;
+
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z\d]/.test(password)) strength++;
+
+            strengthBar.className = 'password-strength-bar';
+            if (strength <= 2) {
+                strengthBar.classList.add('strength-weak');
+            } else if (strength === 3) {
+                strengthBar.classList.add('strength-medium');
+            } else {
+                strengthBar.classList.add('strength-strong');
+            }
+        }
+
+        // Écouter les changements du mot de passe
+        document.getElementById('regPassword').addEventListener('input', (e) => {
+            checkPasswordStrength(e.target.value);
+        });
+
+        // Formulaire d'inscription
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            // Reset des erreurs
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('show'));
+            
+            let hasError = false;
+
+            // Validation Nom
+            if (name.length < 3) {
+                document.getElementById('regNameError').classList.add('show');
+                hasError = true;
+            }
+
+            // Validation Email
+            if (!validateEmail(email)) {
+                document.getElementById('regEmailError').classList.add('show');
+                hasError = true;
+            }
+
+            // Validation Mot de passe
+            if (!validatePassword(password)) {
+                document.getElementById('regPasswordError').classList.add('show');
+                hasError = true;
+            }
+
+            // Confirmation mot de passe
+            if (password !== confirmPassword) {
+                document.getElementById('regConfirmError').classList.add('show');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            // Vérifier si l'email existe déjà
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (users.find(u => u.email === email)) {
+                showMessage('registerMessage', 'Cet email est déjà utilisé', 'error');
+                return;
+            }
+
+            // Hash du mot de passe
+            const hashedPassword = await hashPassword(password);
+
+            // Sauvegarder l'utilisateur
+            const user = {
+                name,
+                email,
+                password: hashedPassword,
+                createdAt: new Date().toLocaleDateString('fr-FR')
+            };
+
+            users.push(user);
+            localStorage.setItem('users', JSON.stringify(users));
+
+            showMessage('registerMessage', 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.', 'success');
+            
+            setTimeout(() => {
+                showLogin();
+            }, 2000);
+        });
+
+        // Formulaire de connexion
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            // Reset des erreurs
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('show'));
+            
+            let hasError = false;
+
+            // Validation Email
+            if (!validateEmail(email)) {
+                document.getElementById('loginEmailError').classList.add('show');
+                hasError = true;
+            }
+
+            // Validation Mot de passe
+            if (password.length === 0) {
+                document.getElementById('loginPasswordError').classList.add('show');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            // Vérifier les identifiants
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const hashedPassword = await hashPassword(password);
+            const user = users.find(u => u.email === email && u.password === hashedPassword);
+
+            if (!user) {
+                showMessage('loginMessage', 'Email ou mot de passe incorrect', 'error');
+                return;
+            }
+
+            // Connexion réussie
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            showDashboard(user);
+        });
+
+        // Afficher un message
+        function showMessage(elementId, message, type) {
+            const msgEl = document.getElementById(elementId);
+            msgEl.textContent = message;
+            msgEl.className = `message ${type} show`;
+            
+            setTimeout(() => {
+                msgEl.classList.remove('show');
+            }, 5000);
+        }
+
+        // Afficher la page de connexion
+        function showLogin() {
+            document.getElementById('registerPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'block';
+            document.getElementById('dashboard').classList.remove('active');
+        }
+
+        // Afficher la page d'inscription
+        function showRegister() {
+            document.getElementById('registerPage').style.display = 'block';
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').classList.remove('active');
+        }
+
+        // Afficher le dashboard
+        function showDashboard(user) {
+            document.getElementById('registerPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userDate').textContent = user.createdAt;
+        }
+
+        // Déconnexion
+        function logout() {
+            localStorage.removeItem('currentUser');
+            showLogin();
+            document.getElementById('loginForm').reset();
+        }
+
+        // Menu toggle
+        function toggleMenu() {
+            document.getElementById('menu').classList.toggle('active');
+        }
+
+        // Vérifier si un utilisateur est déjà connecté
+        window.addEventListener('load', () => {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (currentUser) {
+                showDashboard(currentUser);
+            }
+        });
+    </script>
+</body>
+</html>

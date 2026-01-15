@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscription site</title>
+    <link href="interfaceinscription.css" rel="stylesheet" media="all">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Mon Site</div>
+                <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+                <nav>
+                    <ul id="menu">
+                        <li><a href="H:\Home\Documents\Technologies de l'internet\Nouveau dossier\Technointernet\index.php">Accueil</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div id="registerPage" class="auth-container">
+        <h2>Créer un compte</h2>
+        
+        <div id="registerMessage" class="message"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="regName">Nom complet</label>
+                <input type="text" id="regName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail" required>
+            </div>
+
+            <div class="form-group">
+                <label for="regPassword">Mot de passe</label>
+                <input type="password" id="regPassword" required>
+            </div>
+
+            <button type="submit" class="btn">S'inscrire</button>
+        </form>
+    </div>
+
+    <div id="dashboard" class="dashboard container">
+        <div class="welcome-box">
+            <h2>Bienvenue sur votre tableau de bord !</h2>
+            <div class="user-info">
+                <p><strong>Nom :</strong> <span id="userName"></span></p>
+                <p><strong>Email :</strong> <span id="userEmail"></span></p>
+                <p><strong>Compte créé le :</strong> <span id="userDate"></span></p>
+            </div>
+            <p>Vous êtes maintenant connecté avec succès.</p>
+            <button class="logout-btn" onclick="logout()">Se déconnecter</button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>Email: nolann.servel.etu@univ-lemans.fr | Tél: 07.69.70.70.87</p>
+            <p>Mon site est soumis à des droits d'auteur</p>
+        </div>
+    </footer>
+
+    <script>
+        // Formulaire d'inscription
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+
+            // Sauvegarder l'utilisateur
+            const user = {
+                name,
+                email,
+                password,
+                createdAt: new Date().toLocaleDateString('fr-FR')
+            };
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            users.push(user);
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('currentUser', JSON.stringify(user));
+
+            showMessage('registerMessage', 'Compte créé avec succès !', 'success');
+            
+            setTimeout(() => {
+                showDashboard(user);
+            }, 1500);
+        });
+
+        // Afficher un message
+        function showMessage(elementId, message, type) {
+            const msgEl = document.getElementById(elementId);
+            msgEl.textContent = message;
+            msgEl.className = `message ${type} show`;
+            
+            setTimeout(() => {
+                msgEl.classList.remove('show');
+            }, 5000);
+        }
+
+        // Afficher le dashboard
+        function showDashboard(user) {
+            document.getElementById('registerPage').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userDate').textContent = user.createdAt;
+        }
+
+        // Déconnexion
+        function logout() {
+            localStorage.removeItem('currentUser');
+            document.getElementById('registerPage').style.display = 'block';
+            document.getElementById('dashboard').classList.remove('active');
+            document.getElementById('registerForm').reset();
+        }
+
+        // Menu toggle
+        function toggleMenu() {
+            document.getElementById('menu').classList.toggle('active');
+        }
+
+        // Vérifier si un utilisateur est déjà connecté
+        window.addEventListener('load', () => {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (currentUser) {
+                showDashboard(currentUser);
+            }
+        });
+    </script>
+</body>
+</html>
