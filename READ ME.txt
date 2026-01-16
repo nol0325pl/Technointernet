@@ -1,0 +1,1 @@
+Bonjour, je n’ai pas réussi à remplir toutes les demandes que vous avez fait quant au site web. Il me manque du php, du java. J’ai créé une table SQL mais j’ai pas réussit à la rajouter à mon code via php. Donc j’ai utilisé de l’IA pour m’aider pour les inscriptions et connexions. Cordialement 
