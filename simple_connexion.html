@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion site</title>
+    <link href="interfaceconnexion.css" rel="stylesheet" media="all">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Mon Site</div>
+                <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+                <nav>
+                    <ul id="menu">
+                        <li><a href="site.html">Accueil</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div id="loginPage" class="auth-container">
+        <h2>Connexion</h2>
+        
+        <div id="loginMessage" class="message"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" required>
+            </div>
+
+            <div class="form-group">
+                <label for="loginPassword">Mot de passe</label>
+                <input type="password" id="loginPassword" required>
+            </div>
+
+            <button type="submit" class="btn">Se connecter</button>
+        </form>
+    </div>
+
+    <div id="dashboard" class="dashboard container">
+        <div class="welcome-box">
+            <h2>Bienvenue sur votre tableau de bord !</h2>
+            <div class="user-info">
+                <p><strong>Email :</strong> <span id="userEmail"></span></p>
+                <p><strong>Connecté le :</strong> <span id="userDate"></span></p>
+            </div>
+            <p>Vous êtes maintenant connecté avec succès.</p>
+            <button class="logout-btn" onclick="logout()">Se déconnecter</button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>Email: nolann.servel.etu@univ-lemans.fr | Tél: 07.69.70.70.87</p>
+            <p>Mon site est soumis à des droits d'auteur</p>
+        </div>
+    </footer>
+
+    <script>
+        // Formulaire de connexion simplifié
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            // Créer un utilisateur avec les infos saisies
+            const user = {
+                email,
+                connectedAt: new Date().toLocaleDateString('fr-FR')
+            };
+
+            showMessage('loginMessage', 'Connexion réussie !', 'success');
+            
+            setTimeout(() => {
+                showDashboard(user);
+            }, 1500);
+        });
+
+        // Afficher un message
+        function showMessage(elementId, message, type) {
+            const msgEl = document.getElementById(elementId);
+            msgEl.textContent = message;
+            msgEl.className = `message ${type} show`;
+            
+            setTimeout(() => {
+                msgEl.classList.remove('show');
+            }, 5000);
+        }
+
+        // Afficher le dashboard
+        function showDashboard(user) {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userDate').textContent = user.connectedAt;
+        }
+
+        // Déconnexion
+        function logout() {
+            document.getElementById('loginPage').style.display = 'block';
+            document.getElementById('dashboard').classList.remove('active');
+            document.getElementById('loginForm').reset();
+        }
+
+        // Menu toggle
+        function toggleMenu() {
+            document.getElementById('menu').classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
